@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Title>KamiYomu Crawler Agent – MangaThemesia</Title>
+		<Description>A specialized crawler agent designed for interacting with MangaThemesia‑based sites. Built on KamiYomu.CrawlerAgents.Core, it provides fast, reliable search, structured metadata extraction, and seamless integration with the broader KamiYomu ecosystem. It standardizes access to MangaThemesia endpoints, ensuring consistent behavior across all supported sources.</Description>
+		<Authors>KamiYomu</Authors>
+		<Owners>KamiYomu</Owners>
+		<PackageProjectUrl>https://gitea.kamiyomu.com/kamiyomu/KamiYomu.CrawlerAgents.MangaThemesia</PackageProjectUrl>
+		<RepositoryUrl>https://gitea.kamiyomu.com/kamiyomu/KamiYomu.CrawlerAgents.MangaThemesia</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>kamiyomu;manga-download;MangaThemesia</PackageTags>
+		<PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+		<PackageIconUrl>https://gitea.kamiyomu.com/kamiyomu/KamiYomu.CrawlerAgents.MangaThemesia/raw/branch/main/src/KamiYomu.CrawlerAgents.MangaThemesia/Resources/logo.png</PackageIconUrl>
+		<PackageIcon>Resources/logo.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="Resources\logo.png" Pack="true" PackagePath="Resources/" />
+		<None Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<IncludeSymbols>True</IncludeSymbols>
+		<IncludeSource>True</IncludeSource>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="KamiYomu.CrawlerAgents.Core" Version="1.1.4" />
+		<PackageReference Include="Polly" Version="8.6.5" />
+	</ItemGroup>
+
+	<Import Project="KamiYomu.CrawlerAgents.MangaThemesia.props" />
+
+</Project>
