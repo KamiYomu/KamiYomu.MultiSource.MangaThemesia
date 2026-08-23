@@ -1,6 +1,7 @@
-﻿# KamiYomu Crawler Agent — MangaThemesia
+﻿# KamiYomu Multi-Source — MangaThemesia
 
-A specialized crawler agent for retrieving public manga data from **MangaThemesia‑based websites** (e.g., AsuraComic, Luminous Scans, ReaperScans legacy). Built on **KamiYomu.CrawlerAgents.Core**, it provides fast search, structured metadata extraction, and seamless integration with the KamiYomu platform.
+A specialized crawler library for extracting manga data from MangaThemesia‑based websites.
+Built on KamiYomu.MultiSource.Core, it delivers fast and reliable search, structured metadata parsing, and seamless integration with the KamiYomu ecosystem. The library standardizes interaction with MangaThemesia endpoints, ensuring consistent behavior across all supported sources.
 
 ---
 
@@ -18,7 +19,7 @@ A specialized crawler agent for retrieving public manga data from **MangaThemesi
 
 MangaThemesia sites do **not** expose a formal API. Instead, they follow a consistent set of HTTP endpoints used across all MangaThemesia‑based platforms.
 
-Your crawler agent implements these endpoints.
+Your source implementation uses these endpoints.
 
 ---
 
@@ -98,13 +99,13 @@ post_id={id}
 3. Add a NuGet source:
    - Public: `https://api.nuget.org/v3/index.json`
    - GitHub: `https://nuget.pkg.github.com/KamiYomu/index.json`
-4. Install **KamiYomu Crawler Agent — MangaThemesia**.
-5. Configure the agent in the Add-ons UI.
+4. Install **KamiYomu Multi-Source — MangaThemesia**.
+5. Configure the source in the Add-ons UI.
 
 ---
 
 ### Via NuGet (Developers)
-dotnet add package KamiYomu.CrawlerAgents.MangaThemesia
+dotnet add package KamiYomu.MultiSource.MangaThemesia
 
 GitHub Packages example:
 <packageSources>
@@ -115,25 +116,3 @@ GitHub Packages example:
 ---
 
 ## Quick Start
-```csharp
-using KamiYomu.CrawlerAgents.MangaThemesia;
-
-[DisplayName("KamiYomu Crawler Agent – any crawler")]
-[CrawlerSelect("Mirror", "MangaThemesia offers multiple mirror sites that may be online and useful.",
-    true, 0, [
-        "https://mangasite.io",
-        "https://sitemanga.com"
-    ])]
-public class MyMangaSiteCrawlerAgent(IDictionary<string, object> options) : MangaThemesiaCrawlerAgent(options)
-{
-}
-
-```
-
----
-
-## Developer Notes
-- Built for **.NET 8**
-- Uses the KamiYomu unified metadata model
-- Supports custom parsing overrides per site
-- Ideal for multi-source aggregation
