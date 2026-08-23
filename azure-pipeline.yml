@@ -9,9 +9,9 @@ variables:
   - name: DOTNET_VERSION
     value: '8.0.x'
   - name: SOLUTION_PATH
-    value: 'src/KamiYomu.CrawlerAgents.MangaThemesia.sln'
+    value: 'src/KamiYomu.MultiSource.MangaThemesia.sln'
   - name: PROJECT_PATH
-    value: 'src/KamiYomu.CrawlerAgents.MangaThemesia/KamiYomu.CrawlerAgents.MangaThemesia.csproj'
+    value: 'src/KamiYomu.MultiSource.MangaThemesia/KamiYomu.MultiSource.MangaThemesia.csproj'
   - name: NUGET_CONFIG_PATH
     value: 'src/NuGet.config'
 
