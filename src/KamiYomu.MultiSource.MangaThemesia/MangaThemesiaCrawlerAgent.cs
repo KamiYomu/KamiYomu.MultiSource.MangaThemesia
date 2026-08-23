@@ -11,14 +11,46 @@ using Page = KamiYomu.CrawlerAgents.Core.Catalog.Page;
 
 namespace KamiYomu.MultiSource.MangaThemesia;
 
+/// <summary>
+/// Abstract base class for crawling manga from MangaThemesia-based websites.
+/// 
+/// This agent provides common functionality for extracting manga data, chapters, and pages
+/// from websites built using the MangaThemesia theme/engine. It handles HTML parsing,
+/// lazy-loaded image extraction, and multi-language field detection.
+/// </summary>
 public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawlerAgent
 {
     private readonly Lazy<HttpClient> _lazyHttpClient;
+    /// <summary>
+    /// Gets the HTTP client used for making requests to the manga source.
+    /// </summary>
     protected HttpClient HttpClient => _lazyHttpClient.Value;
+    /// <summary>
+    /// The base URL of the manga source (e.g., https://example.com).
+    /// </summary>
     protected readonly string BaseUrl;
+    /// <summary>
+    /// The directory path where manga are located (default: "/manga").
+    /// </summary>
     protected readonly string MangaDir;
+    /// <summary>
+    /// Gets the project page URL path (default: "/project").
+    /// </summary>
     protected virtual string ProjectPageString => "/project";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MangaThemesiaCrawlerAgent"/> class.
+    /// </summary>
+    /// <param name="options">Configuration options including:
+    /// <list type="bullet">
+    /// <item><description>"Mirror" (required): The base URL of the manga source</description></item>
+    /// <item><description>"SmartCrawlerHttpHandler" (optional): HTTP handler for smart crawling</description></item>
+    /// <item><description>"FlareSolverrHttpHandler" (optional): HTTP handler for Cloudflare bypassing</description></item>
+    /// <item><description>"ChromiumHttpHandler" (optional): HTTP handler for Chromium-based requests</description></item>
+    /// </list>
+    /// </param>
+    /// <param name="mangaDirectory">The directory path for manga (default: "/manga").</param>
+    /// <exception cref="ArgumentNullException">Thrown when "Mirror" option is not provided.</exception>
     public MangaThemesiaCrawlerAgent(IDictionary<string, object> options, string mangaDirectory = "/manga") : base(options)
     {
         string mirrorUrl = Options.TryGetValue("Mirror", out object? mirror) && mirror is string mirrorValue ? mirrorValue : throw new ArgumentNullException("Mirror", "Mirror Url is required");
@@ -42,6 +74,9 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         HttpClient.DefaultRequestHeaders.Add("Referer", $"{BaseUrl}/");
     }
 
+    /// <summary>
+    /// Disposes the HTTP client if it has been created.
+    /// </summary>
     public void Dispose()
     {
         if (_lazyHttpClient.IsValueCreated)
@@ -50,14 +85,14 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual async Task<Uri> GetFaviconAsync(CancellationToken cancellationToken)
     {
         Uri favicon = new($"{BaseUrl}/favicon.ico");
         return favicon;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual async Task<PagedResult<Manga>> SearchAsync(
     string titleName,
     PaginationOptions paginationOptions,
@@ -85,6 +120,11 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             .Build();
     }
 
+    /// <summary>
+    /// Parses the HTML search results page and extracts manga information.
+    /// </summary>
+    /// <param name="doc">The HTML document containing search results.</param>
+    /// <returns>A list of manga extracted from the search results.</returns>
     protected virtual List<Manga> SearchMangaParse(HtmlDocument doc)
     {
         HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(SearchMangaSelector());
@@ -142,17 +182,26 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return list;
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for extracting manga items from search results.
+    /// </summary>
+    /// <returns>An XPath expression to select manga container elements.</returns>
     protected virtual string SearchMangaSelector()
     {
         // XPath equivalent of ".utao .uta .imgu, .listupd .bs .bsx, .listo .bs .bsx"
         return "//div[@class='utao']//div[@class='uta']//div[@class='imgu'] | //div[@class='listupd']//div[@class='bs']//div[@class='bsx'] | //div[@class='listo']//div[@class='bs']//div[@class='bsx']";
     }
+
+    /// <summary>
+    /// Gets the CSS/XPath selector for the next page button in search results.
+    /// </summary>
+    /// <returns>An XPath expression to select the next page element.</returns>
     protected virtual string SearchMangaNextPageSelector()
     {
         return "//div[contains(@class,'pagination')]//*[contains(@class,'next')] | //div[contains(@class,'hpage')]//*[contains(@class,'r')]";
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual async Task<Manga> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         Uri url = new(new Uri(BaseUrl), $"{MangaDir}/{id}");
@@ -163,6 +212,13 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return MangaDetailsParse(id, url, doc);
     }
 
+    /// <summary>
+    /// Parses the HTML manga detail page and extracts all metadata.
+    /// </summary>
+    /// <param name="id">The manga ID.</param>
+    /// <param name="url">The URL of the manga detail page.</param>
+    /// <param name="doc">The HTML document containing manga details.</param>
+    /// <returns>A manga object with complete metadata, or null if parsing fails.</returns>
     protected virtual Manga MangaDetailsParse(string id, Uri url, HtmlDocument doc)
     {
         HtmlNode container = doc.DocumentNode.SelectSingleNode(SeriesDetailsSelector());
@@ -228,17 +284,28 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return manga;
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for the main series details container.
+    /// </summary>
+    /// <returns>An XPath expression to select the series details container.</returns>
     protected virtual string SeriesDetailsSelector()
     {
         return "//div[contains(@class,'bigcontent')] | //div[contains(@class,'animefull')] | //div[contains(@class,'main-info')] | //div[contains(@class,'postbody')]";
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for the series title element.
+    /// </summary>
+    /// <returns>An XPath expression to select the title element.</returns>
     protected virtual string SeriesTitleSelector()
     {
-        return "//h1[contains(@class,'entry-title')] | //div[contains(@class,'ts-breadcrumb')]//li[last()]/span"
-;
+        return "//h1[contains(@class,'entry-title')] | //div[contains(@class,'ts-breadcrumb')]//li[last()]/span";
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for the series artist, supporting multiple languages and formats.
+    /// </summary>
+    /// <returns>An XPath expression to select the artist element.</returns>
     protected virtual string SeriesArtistSelector()
     {
         string[] keywords =
@@ -267,7 +334,10 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         ]);
     }
 
-
+    /// <summary>
+    /// Gets the CSS/XPath selector for the series author, supporting multiple languages and formats.
+    /// </summary>
+    /// <returns>An XPath expression to select the author element.</returns>
     protected virtual string SeriesAuthorSelector()
     {
         string[] keywords =
@@ -296,12 +366,19 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         ]);
     }
 
-
+    /// <summary>
+    /// Gets the CSS/XPath selector for the series description.
+    /// </summary>
+    /// <returns>An XPath expression to select the description element.</returns>
     protected virtual string SeriesDescriptionSelector()
     {
         return "//*[contains(@class,'desc')] | //*[(contains(@class,'entry-content') and @itemprop='description')]";
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for alternative series names, supporting multiple languages and formats.
+    /// </summary>
+    /// <returns>An XPath expression to select the alternative names element.</returns>
     protected virtual string SeriesAltNameSelector()
     {
         return
@@ -319,8 +396,10 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             );
     }
 
-
-
+    /// <summary>
+    /// Gets the CSS/XPath selector for series genres.
+    /// </summary>
+    /// <returns>An XPath expression to select genre elements.</returns>
     protected virtual string SeriesGenreSelector()
     {
         return "//div[@class='gnr']//a | .//a[@class='mgen'] | .//a[@class='seriestugenre'] | " +
@@ -333,6 +412,10 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         );
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for the series type, supporting multiple languages and formats.
+    /// </summary>
+    /// <returns>An XPath expression to select the type element.</returns>
     protected virtual string SeriesTypeSelector()
     {
         string[] keywords =
@@ -361,7 +444,10 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         ]);
     }
 
-
+    /// <summary>
+    /// Gets the CSS/XPath selector for the series status, supporting multiple languages and formats.
+    /// </summary>
+    /// <returns>An XPath expression to select the status element.</returns>
     protected virtual string SeriesStatusSelector()
     {
         string[] keywords =
@@ -369,7 +455,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             "status",
             "Statut",
             "Durum",
-            "连載状況",
+            "連載状況",
             "Estado",
             "الحالة",
             "حالة العمل",
@@ -392,18 +478,27 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         ]);
     }
 
-
+    /// <summary>
+    /// Gets the CSS/XPath selector for the series thumbnail/cover image.
+    /// </summary>
+    /// <returns>An XPath expression to select the thumbnail element.</returns>
     protected virtual string SeriesThumbnailSelector()
     {
         return "//*[contains(@class,'infomanga')]//div[@itemprop='image']/img | //*[contains(@class,'thumb')]//img";
     }
 
+    /// <summary>
+    /// Builds an XPath selector by replacing a template with multiple keyword variants.
+    /// </summary>
+    /// <param name="selectorTemplate">The XPath template with "%s" placeholder for keywords.</param>
+    /// <param name="keywords">The list of keywords to substitute into the template.</param>
+    /// <returns>An XPath expression combining all keyword variants with OR operators.</returns>
     protected virtual string BuildSelector(string selectorTemplate, string[] keywords)
     {
         return string.Join(" | ", keywords.Select(keyword => selectorTemplate.Replace("%s", keyword)));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual async Task<PagedResult<Chapter>> GetChaptersAsync(
     Manga manga,
     PaginationOptions paginationOptions,
@@ -425,6 +520,12 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             .Build();
     }
 
+    /// <summary>
+    /// Parses the manga detail page HTML and extracts all chapters.
+    /// </summary>
+    /// <param name="manga">The parent manga object.</param>
+    /// <param name="doc">The HTML document containing the chapter list.</param>
+    /// <returns>A list of chapters extracted from the page.</returns>
     protected virtual List<Chapter> ChaptersParse(Manga manga, HtmlDocument doc)
     {
         HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(ChapterListSelector());
@@ -468,11 +569,20 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return chapters;
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for chapter list items.
+    /// </summary>
+    /// <returns>An XPath expression to select chapter elements.</returns>
     protected virtual string ChapterListSelector()
     {
         return "//div[@class='bxcl']//li | //div[@class='cl']//li | //*[@id='chapterlist']//li | //ul//li[div[@class='chbox'] and div[@class='eph-num']]";
     }
 
+    /// <summary>
+    /// Extracts the chapter number from the chapter title using regex pattern matching.
+    /// </summary>
+    /// <param name="title">The chapter title text.</param>
+    /// <returns>The extracted chapter number, or 0 if no number is found.</returns>
     protected virtual decimal ExtractChapterNumber(string title)
     {
         // Match integers or decimals: 12, 12.5, 0.1, 3.50, etc.
@@ -491,7 +601,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             : 0;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual async Task<IEnumerable<Page>> GetChapterPagesAsync(
     Chapter chapter,
     CancellationToken cancellationToken)
@@ -572,11 +682,20 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return pages;
     }
 
+    /// <summary>
+    /// Gets the CSS/XPath selector for page image elements within the reader area.
+    /// </summary>
+    /// <returns>An XPath expression to select image elements.</returns>
     protected virtual string PageSelector()
     {
         return "//div[@id='readerarea']//img";
     }
 
+    /// <summary>
+    /// Extracts the image URL from an HTML node, handling lazy-loaded images and various attribute names.
+    /// </summary>
+    /// <param name="node">The HTML node containing or referencing an image.</param>
+    /// <returns>The image URL, or an empty string if no URL is found.</returns>
     protected virtual string ExtractImage(HtmlNode node)
     {
         if (node == null)
@@ -606,12 +725,22 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return url ?? string.Empty;
     }
 
+    /// <summary>
+    /// Extracts the cover image URL from the series details container.
+    /// </summary>
+    /// <param name="container">The HTML container with series details.</param>
+    /// <returns>The cover image URL, or an empty string if not found.</returns>
     protected virtual string ExtractCoverImage(HtmlNode container)
     {
         HtmlNode imgNode = container.SelectSingleNode(SeriesThumbnailSelector());
         return imgNode != null ? ExtractImage(imgNode) : string.Empty;
     }
 
+    /// <summary>
+    /// Extracts the full description from the series details container, including alternative names.
+    /// </summary>
+    /// <param name="container">The HTML container with series details.</param>
+    /// <returns>The formatted description with alternative names appended, or an empty string if not found.</returns>
     protected virtual string ExtractDescription(HtmlNode container)
     {
         HtmlNodeCollection descNodes = container.SelectNodes(SeriesDescriptionSelector());
@@ -646,12 +775,23 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return description;
     }
 
+    /// <summary>
+    /// Extracts text content from a specific field within the series details container.
+    /// </summary>
+    /// <param name="container">The HTML container with series details.</param>
+    /// <param name="selector">The XPath selector for the field element.</param>
+    /// <returns>The trimmed text content, or null if the element is not found.</returns>
     protected virtual string ExtractFieldFromContainer(HtmlNode container, string selector)
     {
         HtmlNode node = container.SelectSingleNode(selector);
         return node?.InnerText.Trim();
     }
 
+    /// <summary>
+    /// Removes common placeholder values that indicate missing or unavailable data.
+    /// </summary>
+    /// <param name="value">The value to clean.</param>
+    /// <returns>The cleaned value, or null if it was a placeholder.</returns>
     protected virtual string RemoveEmptyPlaceholder(string value)
     {
         if (string.IsNullOrWhiteSpace(value) || value == "-" || value == "N/A" || value == "n/a" || value == "Unknown")
@@ -662,6 +802,12 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return value;
     }
 
+    /// <summary>
+    /// Parses a release status string and returns the corresponding ReleaseStatus enum value.
+    /// Supports multiple languages including English, Japanese, Arabic, Thai, and more.
+    /// </summary>
+    /// <param name="text">The status text to parse.</param>
+    /// <returns>The corresponding ReleaseStatus value, or Continuing if no match is found.</returns>
     protected virtual ReleaseStatus ParseStatus(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -718,6 +864,11 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         return ReleaseStatus.Continuing;
     }
 
+    /// <summary>
+    /// Extracts the manga ID from a URL by removing query parameters and extracting the last path segment.
+    /// </summary>
+    /// <param name="url">The manga URL.</param>
+    /// <returns>The extracted manga ID, or the original URL if extraction fails.</returns>
     protected virtual string ExtractIdFromUrl(string url)
     {
         // Remove query string
