@@ -1,4 +1,4 @@
-namespace KamiYomu.CrawlerAgents.MangaThemesia;
+namespace KamiYomu.MultiSource.MangaThemesia;
 public class ComicHelper
 {
     public static bool IsGenreNotFamilySafe(string p)

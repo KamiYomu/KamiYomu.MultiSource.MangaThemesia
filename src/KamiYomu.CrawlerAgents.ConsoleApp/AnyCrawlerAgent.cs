@@ -1,7 +1,7 @@
 using System.ComponentModel;
 
 using KamiYomu.CrawlerAgents.Core.Inputs;
-using KamiYomu.CrawlerAgents.MangaThemesia;
+using KamiYomu.MultiSource.MangaThemesia;
 
 namespace KamiYomu.CrawlerAgents.ConsoleApp;
 [DisplayName("KamiYomu Crawler Agent – any crawler")]

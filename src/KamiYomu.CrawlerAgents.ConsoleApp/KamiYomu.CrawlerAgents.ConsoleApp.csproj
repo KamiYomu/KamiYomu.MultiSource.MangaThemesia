@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KamiYomu.CrawlerAgents.MangaThemesia\KamiYomu.CrawlerAgents.MangaThemesia.csproj" />
+    <ProjectReference Include="..\KamiYomu.MultiSource.MangaThemesia\KamiYomu.MultiSource.MangaThemesia.csproj" />
   </ItemGroup>
 
 </Project>

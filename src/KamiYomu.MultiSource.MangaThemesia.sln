@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36705.20
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KamiYomu.CrawlerAgents.ConsoleApp", "KamiYomu.CrawlerAgents.ConsoleApp\KamiYomu.CrawlerAgents.ConsoleApp.csproj", "{4AC18876-E003-9996-347B-48215310AA02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KamiYomu.CrawlerAgents.MangaThemesia", "KamiYomu.CrawlerAgents.MangaThemesia\KamiYomu.CrawlerAgents.MangaThemesia.csproj", "{C0BF93A9-E868-E59B-250F-BA3AEC3A169C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KamiYomu.MultiSource.MangaThemesia", "KamiYomu.MultiSource.MangaThemesia\KamiYomu.MultiSource.MangaThemesia.csproj", "{20E2227A-58CD-E13F-8C93-A36BE5D15EE0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{4AC18876-E003-9996-347B-48215310AA02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4AC18876-E003-9996-347B-48215310AA02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4AC18876-E003-9996-347B-48215310AA02}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C0BF93A9-E868-E59B-250F-BA3AEC3A169C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C0BF93A9-E868-E59B-250F-BA3AEC3A169C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C0BF93A9-E868-E59B-250F-BA3AEC3A169C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C0BF93A9-E868-E59B-250F-BA3AEC3A169C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20E2227A-58CD-E13F-8C93-A36BE5D15EE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20E2227A-58CD-E13F-8C93-A36BE5D15EE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20E2227A-58CD-E13F-8C93-A36BE5D15EE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20E2227A-58CD-E13F-8C93-A36BE5D15EE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

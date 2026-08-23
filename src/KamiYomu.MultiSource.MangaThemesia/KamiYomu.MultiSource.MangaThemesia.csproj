@@ -39,6 +39,6 @@
 		<PackageReference Include="Polly" Version="8.6.5" />
 	</ItemGroup>
 
-	<Import Project="KamiYomu.CrawlerAgents.MangaThemesia.props" />
+	<Import Project="KamiYomu.MultiSource.MangaThemesia.props" />
 
 </Project>

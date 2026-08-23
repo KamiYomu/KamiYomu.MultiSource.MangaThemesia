@@ -23,7 +23,7 @@ Dictionary<string, object> options = new()
 ICrawlerAgent crawler = new AnyCrawlerAgent(options);
 List<(string Method, bool Success, string Message)> results = [];
 
-PagedResult<Manga> mangaResult = await crawler.SearchAsync("drag", new PaginationOptions(0, 30), CancellationToken.None);
+PagedResult<Manga> mangaResult = await crawler.SearchAsync("sa", new PaginationOptions(0, 30), CancellationToken.None);
 #endregion
 
 #region Test GetFaviconAsync
