@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 
 using HtmlAgilityPack;
@@ -37,6 +38,15 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     /// Gets the project page URL path (default: "/project").
     /// </summary>
     protected virtual string ProjectPageString => "/project";
+    /// <summary>
+    /// DateTime format string used for parsing release dates (default: "MMMM dd, yyyy").
+    /// </summary>
+    protected virtual string DateTimeFormat => "MMMM dd, yyyy";
+    /// <summary>
+    /// DateTime format provider used for parsing release dates (default: en-US culture).
+    /// </summary>
+    protected virtual IFormatProvider DateTimeFormatProvider => CultureInfo.GetCultureInfo("en-US");
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MangaThemesiaCrawlerAgent"/> class.
@@ -544,12 +554,14 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
 
                 string chapterId = a.GetAttributeValue("href", "");
                 string title = a.InnerText.Trim();
+                string releaseDateText = li.SelectSingleNode(".//span[contains(@class,'chapterdate')]")?.InnerText.Trim() ?? string.Empty;
 
                 string uri = chapterId.StartsWith("http")
                     ? chapterId
                     : $"{BaseUrl}{chapterId}";
 
                 decimal number = ExtractChapterNumber(title);
+                DateTime? releaseDate = ExtractChapterReleaseDate(releaseDateText);
 
                 ChapterBuilder chapterBuilder = ChapterBuilder.Create();
 
@@ -559,6 +571,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
                      .WithParentManga(manga)
                      .WithVolume(0)
                      .WithTranslatedLanguage("en")
+                     .WithReleaseDate(releaseDate ?? default)
                      .WithNumber(number)
                      .WithUri(new Uri(uri));
 
@@ -568,6 +581,23 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
 
         return chapters;
     }
+    /// <summary>
+    /// Extracts the release date of a chapter from the provided text, using a specific date format.
+    /// </summary>
+    /// <param name="releaseDateText">The text containing the release date.</param>
+    /// <returns>The extracted release date, or null if parsing fails.</returns>
+    protected virtual DateTime? ExtractChapterReleaseDate(string releaseDateText)
+    {
+        return DateTime.TryParseExact(
+            releaseDateText,
+            DateTimeFormat,
+            DateTimeFormatProvider,
+            DateTimeStyles.None,
+            out DateTime releaseDate)
+            ? releaseDate
+            : null;
+    }
+
 
     /// <summary>
     /// Gets the CSS/XPath selector for chapter list items.
@@ -594,8 +624,8 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         }
 
         // Use invariant culture to avoid locale issues (e.g., commas vs dots)
-        return decimal.TryParse(match.Value, System.Globalization.NumberStyles.Any,
-                            System.Globalization.CultureInfo.InvariantCulture,
+        return decimal.TryParse(match.Value, NumberStyles.Any,
+                            CultureInfo.InvariantCulture,
                             out decimal number)
             ? number
             : 0;

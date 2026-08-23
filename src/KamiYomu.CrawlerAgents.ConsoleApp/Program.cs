@@ -18,7 +18,7 @@ ILogger logger = loggerFactory.CreateLogger<Program>();
 Dictionary<string, object> options = new()
 {
     { CrawlerAgentSettings.DefaultInputs.KamiYomuILogger, logger },
-    { "Mirror", "https://noxenscan.com" }
+    { "Mirror", "https://galaxymanga.io" }
 };
 ICrawlerAgent crawler = new AnyCrawlerAgent(options);
 List<(string Method, bool Success, string Message)> results = [];
@@ -99,6 +99,7 @@ try
     results.Add(($"{nameof(Chapter.Title)} is not empty", !string.IsNullOrWhiteSpace(chaptersResult?.Data?.FirstOrDefault().Title), $"{chaptersResult?.Data?.FirstOrDefault().Title}"));
     results.Add(($"{nameof(Chapter.Uri)} is not empty", !string.IsNullOrWhiteSpace(chaptersResult.Data?.FirstOrDefault().Uri.ToString()), $"{chaptersResult.Data?.FirstOrDefault().Uri}"));
     results.Add(($"{nameof(Chapter.Number)} is not empty", allNumbers.Count > 0, numbersString));
+    results.Add(($"{nameof(Chapter.ReleaseDate)} is not empty", chaptersResult.Data?.FirstOrDefault()?.ReleaseDate != null, $"{chaptersResult.Data?.FirstOrDefault()?.ReleaseDate}"));
     results.Add(($"{nameof(allNumbers.Count)} is not empty", allNumbers.Count > 0, allNumbers.Count.ToString()));
     results.Add(($"{nameof(Chapter.ParentManga)} is not empty", chaptersResult.Data?.FirstOrDefault() != null, $"{chaptersResult.Data?.FirstOrDefault().ParentManga.Title}"));
 }
