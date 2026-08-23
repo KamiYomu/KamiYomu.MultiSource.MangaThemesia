@@ -8,8 +8,9 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Title>KamiYomu Crawler Agent – MangaThemesia</Title>
-		<Description>A specialized crawler agent designed for interacting with MangaThemesia‑based sites. Built on KamiYomu.CrawlerAgents.Core, it provides fast, reliable search, structured metadata extraction, and seamless integration with the broader KamiYomu ecosystem. It standardizes access to MangaThemesia endpoints, ensuring consistent behavior across all supported sources.</Description>
+		<Title>KamiYomu MultiSource – MangaThemesia</Title>
+		<Description>A specialized crawler library for extracting manga data from MangaThemesia‑based websites.
+Built on KamiYomu.CrawlerAgents.Core, it delivers fast and reliable search, structured metadata parsing, and seamless integration with the KamiYomu ecosystem. The library standardizes interaction with MangaThemesia endpoints, ensuring consistent behavior across all supported sources.</Description>
 		<Authors>KamiYomu</Authors>
 		<Owners>KamiYomu</Owners>
 		<PackageProjectUrl>https://gitea.kamiyomu.com/kamiyomu/KamiYomu.CrawlerAgents.MangaThemesia</PackageProjectUrl>
