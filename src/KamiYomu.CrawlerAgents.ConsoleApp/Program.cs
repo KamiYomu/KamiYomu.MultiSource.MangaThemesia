@@ -18,7 +18,7 @@ ILogger logger = loggerFactory.CreateLogger<Program>();
 Dictionary<string, object> options = new()
 {
     { CrawlerAgentSettings.DefaultInputs.KamiYomuILogger, logger },
-    { "Mirror", "https://www.lianscans.com" }
+    { "Mirror", "https://kingofshojo.com" }
 };
 ICrawlerAgent crawler = new AnyCrawlerAgent(options);
 List<(string Method, bool Success, string Message)> results = [];

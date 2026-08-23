@@ -165,8 +165,8 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
                 // Build Manga using your builder
                 Manga manga = MangaBuilder.Create()
                     .WithId(id)
-                    .WithTitle(title)
-                    .WithDescription(string.IsNullOrWhiteSpace(summary) ? "no description" : summary)
+                    .WithTitle(WebUtility.HtmlDecode(title))
+                    .WithDescription(string.IsNullOrWhiteSpace(summary) ? "no description" : WebUtility.HtmlDecode(summary))
                     .WithWebsiteUrl(mangaUrl)
                     .WithCoverFileName(Path.GetFileName(coverUrl))
                     .WithCoverUrl(string.IsNullOrEmpty(coverUrl) ? null : new Uri(coverUrl))
@@ -270,8 +270,8 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         // Build final Manga object
         Manga manga = MangaBuilder.Create()
             .WithId(id)
-            .WithTitle(title)
-            .WithDescription(description)
+            .WithTitle(WebUtility.HtmlDecode(title))
+            .WithDescription(WebUtility.HtmlDecode(description))
             .WithWebsiteUrl(url.ToString())
             .WithCoverFileName(Path.GetFileName(coverUrl))
             .WithCoverUrl(string.IsNullOrEmpty(coverUrl) ? null : new Uri(coverUrl))
@@ -555,7 +555,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
 
                 chapterBuilder = chapterBuilder
                      .WithId(chapterId)
-                     .WithTitle(title)
+                     .WithTitle(WebUtility.HtmlDecode(title))
                      .WithParentManga(manga)
                      .WithVolume(0)
                      .WithTranslatedLanguage("en")
@@ -756,7 +756,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             string text = descNode.InnerText.Trim();
             if (!string.IsNullOrEmpty(text))
             {
-                descriptions.Add(WebUtility.HtmlDecode(text));
+                descriptions.Add(text);
             }
         }
 
