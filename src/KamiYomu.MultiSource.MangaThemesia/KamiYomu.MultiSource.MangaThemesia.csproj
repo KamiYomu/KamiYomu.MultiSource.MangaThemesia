@@ -37,7 +37,6 @@ Built on KamiYomu.CrawlerAgents.Core, it delivers fast and reliable search, stru
 
 	<ItemGroup>
 		<PackageReference Include="KamiYomu.CrawlerAgents.Core" Version="1.1.4" />
-		<PackageReference Include="Polly" Version="8.6.5" />
 	</ItemGroup>
 
 	<Import Project="KamiYomu.MultiSource.MangaThemesia.props" />

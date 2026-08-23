@@ -1,7 +1,7 @@
 ﻿# KamiYomu Multi-Source — MangaThemesia
 
 A specialized crawler library for extracting manga data from MangaThemesia‑based websites.
-Built on KamiYomu.MultiSource.Core, it delivers fast and reliable search, structured metadata parsing, and seamless integration with the KamiYomu ecosystem. The library standardizes interaction with MangaThemesia endpoints, ensuring consistent behavior across all supported sources.
+Built on [KamiYomu.CrawlerAgents.Core](https://github.com/KamiYomu/KamiYomu.CrawlerAgents.Core), it delivers fast and reliable search, structured metadata parsing, and seamless integration with the KamiYomu ecosystem. The library standardizes interaction with MangaThemesia endpoints, ensuring consistent behavior across all supported sources.
 
 ---
 
