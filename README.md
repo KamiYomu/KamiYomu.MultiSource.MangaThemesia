@@ -15,6 +15,56 @@ Built on [KamiYomu.CrawlerAgents.Core](https://github.com/KamiYomu/KamiYomu.Craw
 
 ---
 
+
+## Installation
+
+### Prerequisites
+- **.NET 8** SDK or later
+- Visual Studio 2022, Visual Studio Code, or compatible IDE
+- An existing .NET project (Console, Web, or Library)
+
+---
+
+### Install via NuGet Package Manager (Visual Studio)
+
+1. **Open your project** in Visual Studio 2022
+2. **Right-click** on your project in Solution Explorer
+3. Select **Manage NuGet Packages**
+4. Click the **Browse** tab
+5. Search for `KamiYomu.MultiSource.MangaThemesia`
+6. Click the package and select **Install**
+7. Review and accept the license agreement
+8. Wait for installation to complete
+
+---
+
+### Install via Package Manager Console (Visual Studio)
+
+1. **Open** Tools → NuGet Package Manager → Package Manager Console
+2. **Ensure** your project is selected in the "Default project" dropdown
+3. **Run** the following command:
+
+```
+dotnet add package KamiYomu.MultiSource.MangaThemesia
+```
+
+# Create your own Crawler Agent compatible with MangaThemesia
+```csharp
+using KamiYomu.CrawlerAgents.Core;
+using KamiYomu.MultiSource.MangaThemesia;
+
+[DisplayName("[Developer Name] Crawler Agent – MyWebSite")]
+[CrawlerSelect("Mirror", "MangaThemesia offers multiple mirror sites that may be online and useful.",
+    true, 0, [
+        "https://mywebsite.com", // << Replace with the actual mirror site URL compatible with MangaThemesia
+    ])]
+public class MyWebSiteCrawlerAgent(IDictionary<string, object> options) : MangaThemesiaCrawlerAgent(options), ICrawlerAgent
+{
+}
+```
+
+---
+
 ## MangaThemesia Website Structure
 
 MangaThemesia sites do **not** expose a formal API. Instead, they follow a consistent HTML-based structure across all MangaThemesia‑based platforms.
@@ -105,50 +155,3 @@ Some MangaThemesia sites may load content dynamically:
 - Additional metadata may be loaded asynchronously
 
 ---
-
-## Installation
-
-### Prerequisites
-- **.NET 8** SDK or later
-- Visual Studio 2022, Visual Studio Code, or compatible IDE
-- An existing .NET project (Console, Web, or Library)
-
----
-
-### Install via NuGet Package Manager (Visual Studio)
-
-1. **Open your project** in Visual Studio 2022
-2. **Right-click** on your project in Solution Explorer
-3. Select **Manage NuGet Packages**
-4. Click the **Browse** tab
-5. Search for `KamiYomu.MultiSource.MangaThemesia`
-6. Click the package and select **Install**
-7. Review and accept the license agreement
-8. Wait for installation to complete
-
----
-
-### Install via Package Manager Console (Visual Studio)
-
-1. **Open** Tools → NuGet Package Manager → Package Manager Console
-2. **Ensure** your project is selected in the "Default project" dropdown
-3. **Run** the following command:
-
-```
-dotnet add package KamiYomu.MultiSource.MangaThemesia
-```
-
-# Create a new C# file in your project and add the following using directive:
-```csharp
-using KamiYomu.CrawlerAgents.Core;
-using KamiYomu.MultiSource.MangaThemesia;
-
-[DisplayName("[Developer Name] Crawler Agent – MyWebSite")]
-[CrawlerSelect("Mirror", "MangaThemesia offers multiple mirror sites that may be online and useful.",
-    true, 0, [
-        "https://mywebsite.com", // << Replace with the actual mirror site URL compatible with MangaThemesia
-    ])]
-public class MyWebSiteCrawlerAgent(IDictionary<string, object> options) : MangaThemesiaCrawlerAgent(options), ICrawlerAgent
-{
-}
-```
