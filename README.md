@@ -49,18 +49,27 @@ dotnet add package KamiYomu.MultiSource.MangaThemesia
 ```
 
 # Create your own Crawler Agent compatible with MangaThemesia
+
+Download the code [KamiYomu.CrawlerAgents.Sample](https://github.com/KamiYomu/KamiYomu.CrawlerAgents.Sample) and
+use the template below to create a new crawler agent for your MangaThemesia-based website. 
+Replace the placeholder values with your actual site information.
+
 ```csharp
 using KamiYomu.CrawlerAgents.Core;
 using KamiYomu.MultiSource.MangaThemesia;
 
 [DisplayName("[Developer Name] Crawler Agent – MyWebSite")]
-[CrawlerSelect("Mirror", "MangaThemesia offers multiple mirror sites that may be online and useful.",
+[CrawlerSelect("Mirror", "Mirror is the actual url for the web site",
     true, 0, [
         "https://mywebsite.com", // << Replace with the actual mirror site URL compatible with MangaThemesia
     ])]
 public class MyWebSiteCrawlerAgent(IDictionary<string, object> options) : MangaThemesiaCrawlerAgent(options), ICrawlerAgent
 {
 }
+
+// That's it! You can now use your custom crawler agent to interact with MangaThemesia-based websites.
+// deploy your agent and test it against KamiYomu.CrawlerAgents.ConsoleApp for ensure compatibility and functionality.
+// publish it in nuget package. 
 ```
 
 ---
