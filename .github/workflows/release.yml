@@ -5,6 +5,11 @@ on:
     branches:
       - 'releases/**'
 
+permissions:
+  contents: write
+  actions: write
+  packages: write
+
 jobs:
   build:
     name: Build, Test, Pack
