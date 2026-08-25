@@ -111,9 +111,24 @@ jobs:
         with:
           name: nugetPackage
           path: ./nugetPackage
-            
+
+      - name: Prep GitHub Package source
+        run: |
+          dotnet nuget add source \
+            https://nuget.pkg.github.com/KamiYomu/index.json \
+            --name github \
+            --username "github" \
+            --password "${{ secrets.GH_KAMIYOMU_GITHUB_PACKAGE_PUBLISHER }}" \
+            --store-password-in-clear-text
+
+      - name: Push package to GitHub Packages
+        run: |
+          dotnet nuget push "./nugetPackage/**/*.nupkg" \
+            --api-key "${{ secrets.GH_KAMIYOMU_GITHUB_PACKAGE_PUBLISHER }}" \
+            --source github \
+            --skip-duplicate
+
       - name: Push package to NuGet.org
-        if: ${{ env.IS_PRERELEASE == 'false' }}
         run: |
           dotnet nuget push "./nugetPackage/**/*.nupkg" \
             --api-key "${{ secrets.GH_KAMIYOMU_NUGETORG_PACKAGE_PUBLISHER }}" \
