@@ -19,7 +19,7 @@ namespace KamiYomu.MultiSource.MangaThemesia;
 /// from websites built using the MangaThemesia theme/engine. It handles HTML parsing,
 /// lazy-loaded image extraction, and multi-language field detection.
 /// </summary>
-public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawlerAgent
+public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawlerAgent, IDefaultHeadersCrawlerAgent
 {
     private readonly Lazy<HttpClient> _lazyHttpClient;
     /// <summary>
@@ -67,21 +67,11 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         MangaDir = mangaDirectory;
         BaseUrl = mirrorUrl.TrimEnd('/');
 
-        HttpClientHandler httpClientHandler =
-            Options.TryGetValue("SmartCrawlerHttpHandler", out object? smartCrawler)
-                && smartCrawler is HttpClientHandler h1 ? h1 :
-            Options.TryGetValue("FlareSolverrHttpHandler", out object? flareSolverr)
-                && flareSolverr is HttpClientHandler h2 ? h2 :
-            Options.TryGetValue("ChromiumHttpHandler", out object? chromium)
-                && chromium is HttpClientHandler h3 ? h3 :
-            new HttpClientHandler();
-
-
-        _lazyHttpClient = new Lazy<HttpClient>(() => new HttpClient(httpClientHandler)
+        _lazyHttpClient = new Lazy<HttpClient>(() => new HttpClient(DefaultHttpClientHandler)
         {
             BaseAddress = new Uri(BaseUrl)
         });
-        HttpClient.DefaultRequestHeaders.Add("Referer", $"{BaseUrl}/");
+
     }
 
     /// <summary>
@@ -919,5 +909,13 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         }
 
         return url; // fallback
+    }
+
+    public IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders()
+    {
+        return
+        [
+            new KeyValuePair<string, string>("Referer", $"{BaseUrl}/")
+        ];
     }
 }

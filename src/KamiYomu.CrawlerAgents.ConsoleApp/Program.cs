@@ -1,6 +1,7 @@
 using KamiYomu.CrawlerAgents.ConsoleApp;
 using KamiYomu.CrawlerAgents.Core;
 using KamiYomu.CrawlerAgents.Core.Catalog;
+using KamiYomu.CrawlerAgents.Core.Extensions;
 
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +18,7 @@ ILogger logger = loggerFactory.CreateLogger<Program>();
 
 Dictionary<string, object> options = new()
 {
-    { CrawlerAgentSettings.DefaultInputs.KamiYomuILogger, logger },
+    { "KamiYomuILogger", logger },
     { "Mirror", "https://galaxymanga.io" }
 };
 ICrawlerAgent crawler = new AnyCrawlerAgent(options);
@@ -119,10 +120,16 @@ try
     IEnumerable<Page> chapterImages = await crawler.GetChapterPagesAsync(chaptersResult.Data.Last(), CancellationToken.None);
 
     using HttpClient httpClient = new();
-    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(CrawlerAgentSettings.HttpUserAgent);
+
+    if (crawler is IDefaultHeadersCrawlerAgent defaultHeadersCrawlerAgent)
+    {
+        httpClient.AddRangeHeaders([.. defaultHeadersCrawlerAgent.GetDefaultHeaders()]);
+    }
+
     byte[] imageBytes = await httpClient.GetByteArrayAsync(chapterImages.ElementAt(0).ImageUrl);
     results.Add(($"{nameof(Chapter.Uri)} is not empty", !string.IsNullOrWhiteSpace(chaptersResult.Data?.FirstOrDefault().Uri.ToString()), $"{chaptersResult.Data?.FirstOrDefault().Uri}"));
     results.Add(($"Count is not empty", chapterImages.Any(), $"{chapterImages.Count()}"));
+    results.Add(($"{nameof(Page.ParentChapter)} is not empty", chapterImages.FirstOrDefault()?.ParentChapter != null, $"{chapterImages.FirstOrDefault()?.ParentChapter.Title}"));
     results.Add((nameof(HttpClient.GetByteArrayAsync), chapterImages.Any(), $"Returned {imageBytes.Count()} bytes as result(s)"));
 }
 catch (Exception ex)
