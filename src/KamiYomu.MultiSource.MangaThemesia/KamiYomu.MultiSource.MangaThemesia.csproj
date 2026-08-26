@@ -36,7 +36,7 @@ Built on KamiYomu.CrawlerAgents.Core, it delivers fast and reliable search, stru
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="KamiYomu.CrawlerAgents.Core" Version="1.2.1" />
+		<PackageReference Include="KamiYomu.CrawlerAgents.Core" Version="1.2.2" />
 	</ItemGroup>
 
 	<Import Project="KamiYomu.MultiSource.MangaThemesia.props" />

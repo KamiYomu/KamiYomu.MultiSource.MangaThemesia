@@ -7,6 +7,7 @@ using KamiYomu.CrawlerAgents.Core;
 using KamiYomu.CrawlerAgents.Core.Catalog;
 using KamiYomu.CrawlerAgents.Core.Catalog.Builders;
 using KamiYomu.CrawlerAgents.Core.Catalog.Definitions;
+using KamiYomu.CrawlerAgents.Core.Extensions;
 
 using Page = KamiYomu.CrawlerAgents.Core.Catalog.Page;
 
@@ -21,11 +22,7 @@ namespace KamiYomu.MultiSource.MangaThemesia;
 /// </summary>
 public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawlerAgent, IDefaultHeadersCrawlerAgent
 {
-    private readonly Lazy<HttpClient> _lazyHttpClient;
-    /// <summary>
-    /// Gets the HTTP client used for making requests to the manga source.
-    /// </summary>
-    protected HttpClient HttpClient => _lazyHttpClient.Value;
+
     /// <summary>
     /// The base URL of the manga source (e.g., https://example.com).
     /// </summary>
@@ -34,6 +31,15 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     /// The directory path where manga are located (default: "/manga").
     /// </summary>
     protected readonly string MangaDir;
+    /// <summary>
+    /// Site Default Language (default: "en"). 
+    /// This can be overridden by providing a "Language" option in the constructor.
+    /// </summary>
+    protected readonly string Language;
+    /// <summary>
+    /// Gets a value indicating whether the manga source is family-safe (default: true).
+    /// </summary>
+    protected virtual bool IsFamilySafe => true;
     /// <summary>
     /// Gets the project page URL path (default: "/project").
     /// </summary>
@@ -46,8 +52,10 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     /// DateTime format provider used for parsing release dates (default: en-US culture).
     /// </summary>
     protected virtual IFormatProvider DateTimeFormatProvider => CultureInfo.GetCultureInfo("en-US");
-
-
+    /// <summary>
+    /// Mimic Browser User Agent: Windows 11 desktop Chrome user agent
+    /// </summary>
+    protected virtual string MimicUserAgent => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36";
     /// <summary>
     /// Initializes a new instance of the <see cref="MangaThemesiaCrawlerAgent"/> class.
     /// </summary>
@@ -64,44 +72,34 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     public MangaThemesiaCrawlerAgent(IDictionary<string, object> options, string mangaDirectory = "/manga") : base(options)
     {
         string mirrorUrl = Options.TryGetValue("Mirror", out object? mirror) && mirror is string mirrorValue ? mirrorValue : throw new ArgumentNullException("Mirror", "Mirror Url is required");
+        Language = Options.TryGetValue("Language", out object? lang) && lang is string langValue ? langValue : "en";
         MangaDir = mangaDirectory;
         BaseUrl = mirrorUrl.TrimEnd('/');
-
-        _lazyHttpClient = new Lazy<HttpClient>(() => new HttpClient(DefaultHttpClientHandler)
-        {
-            BaseAddress = new Uri(BaseUrl)
-        });
-
     }
 
-    /// <summary>
-    /// Disposes the HTTP client if it has been created.
-    /// </summary>
-    public void Dispose()
+    protected override HttpClient GetDefaultHttpClient()
     {
-        if (_lazyHttpClient.IsValueCreated)
-        {
-            HttpClient.Dispose();
-        }
+        HttpClient http = base.GetDefaultHttpClient();
+        http.BaseAddress = new Uri(BaseUrl);
+        http.AddRangeHeaders(GetDefaultHeaders());
+        http.DefaultRequestHeaders.UserAgent.ParseAdd(MimicUserAgent);
+        return http;
     }
 
     /// <inheritdoc />
-    public virtual async Task<Uri> GetFaviconAsync(CancellationToken cancellationToken)
+    public virtual Task<Uri> GetFaviconAsync(CancellationToken cancellationToken)
     {
         Uri favicon = new($"{BaseUrl}/favicon.ico");
-        return favicon;
+        return Task.FromResult(favicon);
     }
 
     /// <inheritdoc />
-    public virtual async Task<PagedResult<Manga>> SearchAsync(
-    string titleName,
-    PaginationOptions paginationOptions,
-    CancellationToken cancellationToken)
+    public virtual async Task<PagedResult<Manga>> SearchAsync(string titleName, PaginationOptions paginationOptions, CancellationToken cancellationToken)
     {
         string page = paginationOptions.ContinuationToken ?? "1";
         string url = $"{BaseUrl}{MangaDir}?title={titleName}&page={page}";
 
-        string html = await HttpClient.GetStringAsync(url, cancellationToken);
+        string html = await DefaultHttpClient.GetStringAsync(url, cancellationToken);
         HtmlDocument doc = new();
         doc.LoadHtml(html);
         List<Manga> list = SearchMangaParse(doc);
@@ -173,7 +171,8 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
                     .WithTags(genres)
                     .WithReleaseStatus(ReleaseStatus.Unreleased)
                     .WithYear(0)
-                    .WithIsFamilySafe(true)
+                    .WithOriginalLanguage(Language)
+                    .WithIsFamilySafe(IsFamilySafe)
                     .Build();
 
                 list.Add(manga);
@@ -206,7 +205,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     {
         Uri url = new(new Uri(BaseUrl), $"{MangaDir}/{id}");
 
-        string html = await HttpClient.GetStringAsync(url, cancellationToken);
+        string html = await DefaultHttpClient.GetStringAsync(url, cancellationToken);
         HtmlDocument doc = new();
         doc.LoadHtml(html);
         return MangaDetailsParse(id, url, doc);
@@ -499,14 +498,11 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     }
 
     /// <inheritdoc />
-    public virtual async Task<PagedResult<Chapter>> GetChaptersAsync(
-    Manga manga,
-    PaginationOptions paginationOptions,
-    CancellationToken cancellationToken)
+    public virtual async Task<PagedResult<Chapter>> GetChaptersAsync(Manga manga, PaginationOptions paginationOptions, CancellationToken cancellationToken)
     {
         Uri url = new(new Uri(BaseUrl), $"{MangaDir}/{manga.Id}");
 
-        string html = await HttpClient.GetStringAsync(url, cancellationToken);
+        string html = await DefaultHttpClient.GetStringAsync(url, cancellationToken);
         HtmlDocument doc = new();
         doc.LoadHtml(html);
         List<Chapter> chapters = ChaptersParse(manga, doc);
@@ -622,15 +618,13 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     }
 
     /// <inheritdoc />
-    public virtual async Task<IEnumerable<Page>> GetChapterPagesAsync(
-    Chapter chapter,
-    CancellationToken cancellationToken)
+    public virtual async Task<IEnumerable<Page>> GetChapterPagesAsync(Chapter chapter, CancellationToken cancellationToken)
     {
         string url = chapter.Id.StartsWith("http")
             ? chapter.Id
             : $"{BaseUrl}{chapter.Id}";
 
-        string html = await HttpClient.GetStringAsync(url, cancellationToken);
+        string html = await DefaultHttpClient.GetStringAsync(url, cancellationToken);
         HtmlDocument doc = new();
         doc.LoadHtml(html);
 
@@ -814,12 +808,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     /// <returns>The cleaned value, or null if it was a placeholder.</returns>
     protected virtual string RemoveEmptyPlaceholder(string value)
     {
-        if (string.IsNullOrWhiteSpace(value) || value == "-" || value == "N/A" || value == "n/a" || value == "Unknown")
-        {
-            return null;
-        }
-
-        return value;
+        return string.IsNullOrWhiteSpace(value) || value == "-" || value == "N/A" || value == "n/a" || value == "Unknown" ? null : value;
     }
 
     /// <summary>
@@ -876,12 +865,9 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         // On Hiatus status indicators
         string[] hiatusIndicators = ["hiatus", "on hold", "pausado", "en espera", "en pause", "en attente", "hiato"];
 
-        if (hiatusIndicators.Any(indicator => text.Contains(indicator, StringComparison.OrdinalIgnoreCase)))
-        {
-            return ReleaseStatus.OnHiatus;
-        }
-
-        return ReleaseStatus.Continuing;
+        return hiatusIndicators.Any(indicator => text.Contains(indicator, StringComparison.OrdinalIgnoreCase))
+            ? ReleaseStatus.OnHiatus
+            : ReleaseStatus.Continuing;
     }
 
     /// <summary>

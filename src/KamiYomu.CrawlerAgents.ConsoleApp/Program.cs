@@ -19,7 +19,8 @@ ILogger logger = loggerFactory.CreateLogger<Program>();
 Dictionary<string, object> options = new()
 {
     { "KamiYomuILogger", logger },
-    { "Mirror", "https://galaxymanga.io" }
+    { "Mirror", "https://scythescans.com" },
+    { "ApplicationHttpClient", new HttpClient(new ChromiumHandler(new HttpClientHandler())) }
 };
 ICrawlerAgent crawler = new AnyCrawlerAgent(options);
 List<(string Method, bool Success, string Message)> results = [];
