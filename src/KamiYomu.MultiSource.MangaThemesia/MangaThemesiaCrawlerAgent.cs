@@ -277,7 +277,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             .WithTags([.. genres])
             .WithReleaseStatus(releaseStatus)
             .WithYear(0)
-            .WithIsFamilySafe(!genres.Any(ComicHelper.IsGenreNotFamilySafe))
+            .WithIsFamilySafe(!genres.Any(IsGenreNotFamilySafe))
             .Build();
 
         return manga;
@@ -649,7 +649,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
                              .WithChapterId(chapter.Id)
                              .WithId(pageNumber.ToString())
                              .WithPageNumber(pageNumber)
-                             .WithImageUrl(new Uri(ComicHelper.NormalizeUrl(new Uri(BaseUrl), imageUrl)))
+                             .WithImageUrl(new Uri(NormalizeUrl(new Uri(BaseUrl), imageUrl)))
                              .WithParentChapter(chapter)
                              .Build();
 
@@ -684,7 +684,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
                                  .WithChapterId(chapter.Id)
                                  .WithId(pageNumber.ToString())
                                  .WithPageNumber(pageNumber)
-                                 .WithImageUrl(new Uri(ComicHelper.NormalizeUrl(new Uri(BaseUrl), imgUrl)))
+                                 .WithImageUrl(new Uri(NormalizeUrl(new Uri(BaseUrl), imgUrl)))
                                  .WithParentChapter(chapter)
                                  .Build();
 
@@ -903,5 +903,80 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         [
             new KeyValuePair<string, string>("Referer", $"{BaseUrl}/")
         ];
+    }
+
+    /// <summary>
+    /// Is the genre not family safe? 
+    /// This method checks if the provided genre string contains any keywords that indicate adult content or themes that are not suitable for all audiences.
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    /// <summary>
+    /// Is the genre not family safe? 
+    /// This method checks if the provided genre string contains any keywords that indicate adult content or themes that are not suitable for all audiences.
+    /// Supports multiple languages: English, Italian, Portuguese, and French.
+    /// </summary>
+    /// <param name="p">The genre string to check.</param>
+    /// <returns>True if the genre contains adult content keywords; otherwise, false.</returns>
+    protected virtual bool IsGenreNotFamilySafe(string p)
+    {
+        if (string.IsNullOrWhiteSpace(p))
+        {
+            return false;
+        }
+
+        string[] notFamilySafeKeywords =
+        [
+            // English
+            "adult", "harem", "hentai", "ecchi", "violence", "smut", "shota", "sexual",
+            // Italian
+            "adulto", "harem", "hentai", "ecchi", "violenza", "smut", "shota", "sessuale",
+            // Portuguese
+            "adulto", "harém", "hentai", "ecchi", "violência", "smut", "shota", "sexual",
+            // French
+            "adulte", "harem", "hentai", "ecchi", "violence", "smut", "shota", "sexuel", "sexuelle",
+            // Spanish
+            "adulto", "harem", "hentai", "ecchi", "violencia", "smut", "shota", "sexual",
+            // German
+            "erwachsene", "harem", "hentai", "ecchi", "gewalt", "smut", "shota", "sexuell",
+            // Japanese
+            "成人向け", "ハーレム", "変態", "エッチ", "暴力", "スムート", "ショタ", "性的",
+            // Arabic
+            "بالغ", "هارم", "هنتاي", "إيشي", "عنف", "سموت", "شوتا", "جنسي",
+        ];
+
+        foreach (string keyword in notFamilySafeKeywords)
+        {
+            if (p.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Normalizes a URL by resolving it against a base URL. 
+    /// If the provided URL is relative, it will be combined with the base URL to form an absolute URL. 
+    /// If the URL is already absolute, it will be returned as-is.
+    /// </summary>
+    /// <param name="baseUrl">The base URL to resolve relative URLs against.</param>
+    /// <param name="url">The URL to normalize.</param>
+    /// <returns>The normalized absolute URL.</returns>
+    protected virtual string NormalizeUrl(Uri baseUrl, string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return string.Empty;
+        }
+
+        if (!url.StartsWith("/") && Uri.TryCreate(url, UriKind.Absolute, out Uri? absolute))
+        {
+            return absolute.ToString();
+        }
+
+        Uri resolved = new(baseUrl, url);
+        return resolved.ToString();
     }
 }
