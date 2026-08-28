@@ -20,7 +20,7 @@ Dictionary<string, object> options = new()
 {
     { "KamiYomuILogger", logger },
     { "Mirror", "https://scythescans.com" },
-    { "ApplicationHttpClient", new HttpClient(new ChromiumHandler(new HttpClientHandler())) }
+    { "ApplicationHttpClient", new HttpClient(new ChromiumHandler()) }
 };
 ICrawlerAgent crawler = new AnyCrawlerAgent(options);
 List<(string Method, bool Success, string Message)> results = [];

@@ -98,23 +98,18 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
     {
         string page = paginationOptions.ContinuationToken ?? "1";
         string url = $"{BaseUrl}{MangaDir}?title={titleName}&page={page}";
+        int pageNumber = string.IsNullOrWhiteSpace(paginationOptions?.ContinuationToken)
+                      ? 1
+                      : int.Parse(paginationOptions.ContinuationToken);
 
         string html = await DefaultHttpClient.GetStringAsync(url, cancellationToken);
         HtmlDocument doc = new();
         doc.LoadHtml(html);
         List<Manga> list = SearchMangaParse(doc);
 
-
-        // MangaThemesia always has next page until empty results
-        bool hasNextPage = list.Count > 0;
-
         return PagedResultBuilder<Manga>.Create()
             .WithData(list)
-            .WithPaginationOptions(
-                hasNextPage
-                    ? new PaginationOptions((int.Parse(page) + 1).ToString())
-                    : null
-            )
+            .WithPaginationOptions(new PaginationOptions((pageNumber + 1).ToString()))
             .Build();
     }
 
@@ -169,8 +164,6 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
                     .WithCoverFileName(Path.GetFileName(coverUrl))
                     .WithCoverUrl(string.IsNullOrEmpty(coverUrl) ? null : new Uri(coverUrl))
                     .WithTags(genres)
-                    .WithReleaseStatus(ReleaseStatus.Unreleased)
-                    .WithYear(0)
                     .WithOriginalLanguage(Language)
                     .WithIsFamilySafe(IsFamilySafe)
                     .Build();
@@ -232,6 +225,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
         string description = ExtractDescription(container);
         string author = ExtractFieldFromContainer(container, SeriesAuthorSelector()) ?? string.Empty;
         string artist = ExtractFieldFromContainer(container, SeriesArtistSelector()) ?? string.Empty;
+        string year = ExtractFieldFromContainer(container, SeriesReleasedSelector()) ?? string.Empty;
 
         // Extract genres
         HtmlNodeCollection genreNodes = container.SelectNodes(SeriesGenreSelector());
@@ -276,7 +270,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             .WithCoverUrl(string.IsNullOrEmpty(coverUrl) ? null : new Uri(coverUrl))
             .WithTags([.. genres])
             .WithReleaseStatus(releaseStatus)
-            .WithYear(0)
+            .WithYear(int.TryParse(year, out int parsedYear) ? parsedYear : 0)
             .WithIsFamilySafe(!genres.Any(IsGenreNotFamilySafe))
             .Build();
 
@@ -317,6 +311,39 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
             "İllüstratör",
             "Çizer",
             "Sanatçı",
+        ];
+
+        string trSelector = BuildSelector(".//tr[contains(., '%s')]//td[last()]", keywords);
+        string spanISelector = BuildSelector(".//span[contains(., '%s')]/following-sibling::i", keywords);
+        string bSpanSelector = BuildSelector(".//b[contains(., '%s')]/following-sibling::span", keywords);
+        string spanSelector = BuildSelector(".//span[contains(., '%s')]", keywords);
+
+        return string.Join(" | ",
+        [
+            trSelector,
+            spanISelector,
+            bSpanSelector,
+            spanSelector
+        ]);
+    }
+    /// <summary>
+    /// Series Year Selector: Gets the CSS/XPath selector for the series year, supporting multiple languages and formats.
+    /// </summary>
+    /// <returns>An XPath expression to select the year element.</returns>
+    protected virtual string SeriesReleasedSelector()
+    {
+        string[] keywords =
+        [
+            "Released",
+            "Release",
+            "Lancé",
+            "year",
+            "année",
+            "año",
+            "السنة",
+            "Yıl",
+            "Ano",
+            "Jahr",
         ];
 
         string trSelector = BuildSelector(".//tr[contains(., '%s')]//td[last()]", keywords);
@@ -867,7 +894,7 @@ public abstract class MangaThemesiaCrawlerAgent : AbstractCrawlerAgent, ICrawler
 
         return hiatusIndicators.Any(indicator => text.Contains(indicator, StringComparison.OrdinalIgnoreCase))
             ? ReleaseStatus.OnHiatus
-            : ReleaseStatus.Continuing;
+            : ReleaseStatus.Unknown;
     }
 
     /// <summary>

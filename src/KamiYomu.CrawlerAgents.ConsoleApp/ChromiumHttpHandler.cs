@@ -7,7 +7,7 @@ using PuppeteerSharp;
 /// </summary>
 /// <param name="innerHandler"></param>
 /// <param name="options"></param>
-public sealed class ChromiumHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+public sealed class ChromiumHandler : DelegatingHandler
 {
     // Shared browser instance
     private static IBrowser? _browser;
